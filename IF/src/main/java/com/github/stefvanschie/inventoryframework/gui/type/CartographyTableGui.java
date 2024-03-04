@@ -9,6 +9,8 @@ import com.github.stefvanschie.inventoryframework.gui.type.util.InventoryBased;
 import com.github.stefvanschie.inventoryframework.gui.type.util.NamedGui;
 import com.github.stefvanschie.inventoryframework.util.version.Version;
 import com.github.stefvanschie.inventoryframework.util.version.VersionMatcher;
+import fr.euphyllia.energie.Energie;
+import fr.euphyllia.energie.model.SchedulerType;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -236,8 +238,9 @@ public class CartographyTableGui extends NamedGui implements InventoryBased {
             cartographyTableInventory.sendItems(player, getTopItems());
         } else if (slot >= 0 && slot <= 2) {
             //the client rejects the output item if send immediately
-            Bukkit.getScheduler().runTask(super.plugin, () ->
-                    cartographyTableInventory.sendItems(player, getTopItems()));
+            super.energie.getScheduler(Energie.SchedulerSoft.MINECRAFT).runTask(SchedulerType.SYNC, player, schedulerTaskInter -> {
+                cartographyTableInventory.sendItems(player, getTopItems());
+            }, null);
 
             if (event.isCancelled()) {
                 cartographyTableInventory.clearCursor(player);

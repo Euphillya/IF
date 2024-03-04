@@ -8,6 +8,7 @@ import com.github.stefvanschie.inventoryframework.pane.*;
 import com.github.stefvanschie.inventoryframework.pane.component.*;
 import com.github.stefvanschie.inventoryframework.util.TriFunction;
 import com.github.stefvanschie.inventoryframework.util.XMLUtil;
+import fr.euphyllia.energie.Energie;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
@@ -47,6 +48,9 @@ public abstract class Gui {
      */
     @NotNull
     protected final Plugin plugin;
+
+    @NotNull
+    protected final Energie energie;
 
     /**
      * The inventory of this gui
@@ -148,6 +152,7 @@ public abstract class Gui {
      */
     public Gui(@NotNull Plugin plugin) {
         this.plugin = plugin;
+        this.energie = new Energie(plugin);
 
         if (!hasRegisteredListeners) {
             Bukkit.getPluginManager().registerEvents(new GuiListener(plugin), plugin);

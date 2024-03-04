@@ -2,6 +2,8 @@ package com.github.stefvanschie.inventoryframework.gui;
 
 import com.github.stefvanschie.inventoryframework.gui.type.*;
 import com.github.stefvanschie.inventoryframework.gui.type.util.Gui;
+import fr.euphyllia.energie.Energie;
+import fr.euphyllia.energie.model.SchedulerType;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -34,6 +36,9 @@ public class GuiListener implements Listener {
     @NotNull
     private final Plugin plugin;
 
+    @NotNull
+    private final Energie energie;
+
     /**
      * A collection of all {@link Gui} instances that have at least one viewer.
      */
@@ -48,6 +53,7 @@ public class GuiListener implements Listener {
      */
     public GuiListener(@NotNull Plugin plugin) {
         this.plugin = plugin;
+        this.energie = new Energie(plugin);
     }
 
     /**
@@ -82,13 +88,14 @@ public class GuiListener implements Listener {
         gui.click(event);
 
         if (event.isCancelled()) {
-            Bukkit.getScheduler().runTask(this.plugin, () -> {
-                PlayerInventory playerInventory = event.getWhoClicked().getInventory();
+            HumanEntity player = event.getWhoClicked();
+            this.energie.getScheduler(Energie.SchedulerSoft.MINECRAFT).runTask(SchedulerType.SYNC, player, schedulerTaskInter -> {
+                PlayerInventory playerInventory = player.getInventory();
 
                 /* due to a client issue off-hand items appear as ghost items, this updates the off-hand correctly
                    client-side */
                 playerInventory.setItemInOffHand(playerInventory.getItemInOffHand());
-            });
+            }, null);
         }
     }
 

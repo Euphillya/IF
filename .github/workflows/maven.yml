@@ -83,3 +83,8 @@ jobs:
         mvn paper-nms:init -pl nms/1_20_3-4
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+    - name: Upload IF jar
+      uses: actions/upload-artifact@v2
+      with:
+        name: IF-Build
+        path: IF/*

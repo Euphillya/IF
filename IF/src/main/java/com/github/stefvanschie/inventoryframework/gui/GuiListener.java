@@ -70,33 +70,33 @@ public class GuiListener implements Listener {
             return;
         }
 
-        InventoryView view = event.getView();
-        Inventory inventory = view.getInventory(event.getRawSlot());
+        HumanEntity player = event.getWhoClicked();
+        this.energie.getScheduler(Energie.SchedulerSoft.MINECRAFT).runTask(SchedulerType.SYNC, player, schedulerTaskInter -> {
+            InventoryView view = event.getView();
+            Inventory inventory = view.getInventory(event.getRawSlot());
 
-        if (inventory == null) {
-            gui.callOnOutsideClick(event);
-            return;
-        }
+            if (inventory == null) {
+                gui.callOnOutsideClick(event);
+                return;
+            }
 
-        gui.callOnGlobalClick(event);
-        if (inventory.equals(view.getTopInventory())) {
-            gui.callOnTopClick(event);
-        } else {
-            gui.callOnBottomClick(event);
-        }
+            gui.callOnGlobalClick(event);
+            if (inventory.equals(view.getTopInventory())) {
+                gui.callOnTopClick(event);
+            } else {
+                gui.callOnBottomClick(event);
+            }
 
-        gui.click(event);
+            gui.click(event);
 
-        if (event.isCancelled()) {
-            HumanEntity player = event.getWhoClicked();
-            this.energie.getScheduler(Energie.SchedulerSoft.MINECRAFT).runTask(SchedulerType.SYNC, player, schedulerTaskInter -> {
+            if (event.isCancelled()) {
                 PlayerInventory playerInventory = player.getInventory();
 
                 /* due to a client issue off-hand items appear as ghost items, this updates the off-hand correctly
                    client-side */
                 playerInventory.setItemInOffHand(playerInventory.getItemInOffHand());
-            }, null);
-        }
+            }
+        }, null);
     }
 
     /**
@@ -351,32 +351,33 @@ public class GuiListener implements Listener {
         if (gui == null) {
             return;
         }
+        this.energie.getScheduler(Energie.SchedulerSoft.MINECRAFT).runTask(SchedulerType.SYNC, event.getPlayer(), schedulerTaskInter -> {
+            HumanEntity humanEntity = event.getPlayer();
+            PlayerInventory playerInventory = humanEntity.getInventory();
 
-        HumanEntity humanEntity = event.getPlayer();
-        PlayerInventory playerInventory = humanEntity.getInventory();
+            //due to a client issue off-hand items appear as ghost items, this updates the off-hand correctly client-side
+            playerInventory.setItemInOffHand(playerInventory.getItemInOffHand());
 
-        //due to a client issue off-hand items appear as ghost items, this updates the off-hand correctly client-side
-        playerInventory.setItemInOffHand(playerInventory.getItemInOffHand());
+            if (!gui.isUpdating()) {
+                gui.callOnClose(event);
 
-        if (!gui.isUpdating()) {
-            gui.callOnClose(event);
+                event.getInventory().clear(); //clear inventory to prevent items being put back
 
-            event.getInventory().clear(); //clear inventory to prevent items being put back
+                gui.getHumanEntityCache().restoreAndForget(humanEntity);
 
-            gui.getHumanEntityCache().restoreAndForget(humanEntity);
+                if (gui.getViewerCount() == 1) {
+                    activeGuiInstances.remove(gui);
+                }
 
-            if (gui.getViewerCount() == 1) {
-                activeGuiInstances.remove(gui);
+                if (gui instanceof AnvilGui) {
+                    ((AnvilGui) gui).handleClose(humanEntity);
+                } else if (gui instanceof MerchantGui) {
+                    ((MerchantGui) gui).handleClose(humanEntity);
+                } else if (gui instanceof ModernSmithingTableGui) {
+                    ((ModernSmithingTableGui) gui).handleClose(humanEntity);
+                }
             }
-
-            if (gui instanceof AnvilGui) {
-                ((AnvilGui) gui).handleClose(humanEntity);
-            } else if (gui instanceof MerchantGui) {
-                ((MerchantGui) gui).handleClose(humanEntity);
-            } else if (gui instanceof ModernSmithingTableGui) {
-                ((ModernSmithingTableGui) gui).handleClose(humanEntity);
-            }
-        }
+        }, null);
     }
 
     /**

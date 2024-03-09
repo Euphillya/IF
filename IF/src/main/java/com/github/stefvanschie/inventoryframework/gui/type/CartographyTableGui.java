@@ -233,18 +233,19 @@ public class CartographyTableGui extends NamedGui implements InventoryBased {
     public void handleClickEvent(@NotNull InventoryClickEvent event) {
         int slot = event.getRawSlot();
         Player player = (Player) event.getWhoClicked();
-        super.energie.getScheduler(Energie.SchedulerSoft.MINECRAFT).runTask(SchedulerType.SYNC, player, schedulerTaskInter -> {
-            if (slot >= 3 && slot <= 38) {
-                cartographyTableInventory.sendItems(player, getTopItems());
-            } else if (slot >= 0 && slot <= 2) {
-                //the client rejects the output item if send immediately
-                cartographyTableInventory.sendItems(player, getTopItems());
 
-                if (event.isCancelled()) {
-                    cartographyTableInventory.clearCursor(player);
-                }
+        if (slot >= 3 && slot <= 38) {
+            cartographyTableInventory.sendItems(player, getTopItems());
+        } else if (slot >= 0 && slot <= 2) {
+            //the client rejects the output item if send immediately
+            super.energie.getScheduler(Energie.SchedulerSoft.MINECRAFT).runTask(SchedulerType.SYNC, player, schedulerTaskInter -> {
+                cartographyTableInventory.sendItems(player, getTopItems());
+            }, null);
+
+            if (event.isCancelled()) {
+                cartographyTableInventory.clearCursor(player);
             }
-        }, null);
+        }
     }
 
     /**
